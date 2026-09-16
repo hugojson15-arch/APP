@@ -61,3 +61,14 @@ export interface ChatRead {
   user_id: string;
   last_read_at: string;
 }
+
+export interface Drill {
+  id: string;
+  team_id: string;
+  title: string;
+  drawing_data: unknown;
+  thumbnail_url: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}

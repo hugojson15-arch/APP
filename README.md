@@ -35,12 +35,24 @@ den snabba PWA-vägen i specen — en kodbas, ingen egen auth/realtime-backend a
   position sparas på spelaren så de är förifyllda nästa gång. Detta är en lätt
   variant av "laguppställningar" — inte en fullständig taktiktavla (se scope
   nedan).
+- **Övningar (ritverktyg)** — admin ritar upp en övning/taktik på en ishockeyrink
+  (hel/halv/neutral zon): drar ut spelare (egna/motstånd), puck, koner, text och
+  tre sorters pilar (skridsko/passning/skott), sparar den (strukturerad data i
+  `drills.drawing_data`, inte bara en bild — går att bygga vidare på senare) och
+  postar en ögonblicksbild i chatten med en knapptryckning. En "Snabbstart:
+  powerplay"-meny fyller i kända formationer (t.ex. 1-3-1) automatiskt utplacerade
+  med truppens numren, som utgångspunkt att justera. Byggt med `konva`/`react-konva`
+  (`src/app/(app)/drills/`); rendering av kanvasen är webbläsar-only, laddas via
+  `next/dynamic({ ssr: false })` eftersom Konva rör vid `window` vid import.
 - **Roller** — admin (tränare/lagledare) vs. spelare, med databasnivå-behörigheter
   (Row Level Security), inte bara UI-gömda knappar.
 
-Explicit utanför scope i v1 (se spec): formationer/taktiktavla (i bemärkelsen
-positionering på en isbana/spelplan), video, sömn/återhämtning, reselogistik,
-fakturering, övningsbank. Lineup-kortet ovan är en enkel roster-lista, inte detta.
+Ursprungsspecen listade uttryckligen "formationer/taktiktavla" som utanför scope
+för v1 — övningsritverktyget ovan byggdes ändå, på uttrycklig begäran, som en
+tydligt avgränsad MVP av just det (rita och dela, inte en fullständig
+träningsplanerare). Fortfarande utanför scope: video, sömn/återhämtning,
+reselogistik, fakturering, en delad övningsbank/publikt bibliotek, och animerad
+uppspelning av övningar steg-för-steg (à la CoachThem).
 
 ## Komma igång
 
@@ -71,9 +83,10 @@ fakturering, övningsbank. Lineup-kortet ovan är en enkel roster-lista, inte de
 - `src/lib/supabase/` — browser-/server-/middleware-klienter för Supabase enligt
   `@supabase/ssr`-mönstret (cookie-baserad session).
 - `supabase/migrations/0001_init.sql` — hela datamodellen: `teams`, `profiles`,
-  `events`, `rsvps`, `messages`, `chat_reads`, plus RLS-policyer och SECURITY DEFINER-
-  funktioner för att skapa/gå med i lag och hantera medlemmar utan att öppna upp
-  privilege-escalation-hål (en spelare kan t.ex. inte sätta sin egen `role` till admin).
+  `events`, `rsvps`, `messages`, `chat_reads`, `drills`, plus RLS-policyer och
+  SECURITY DEFINER-funktioner för att skapa/gå med i lag och hantera medlemmar utan
+  att öppna upp privilege-escalation-hål (en spelare kan t.ex. inte sätta sin egen
+  `role` till admin).
 - Realtid: Supabase Realtime (`postgres_changes`) på `events`, `rsvps`, `messages` och
   `chat_reads`, scopat till laget via RLS.
 - `src/lib/team-brand.ts` — slår upp den inloggade användarens lag (namn, färger,

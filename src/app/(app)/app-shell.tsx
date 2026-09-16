@@ -10,6 +10,7 @@ import NotificationSetup from "@/components/notification-setup";
 const NAV = [
   { href: "/calendar", label: "Kalender", icon: CalendarIcon },
   { href: "/chat", label: "Chatt", icon: ChatIcon },
+  { href: "/drills", label: "Övningar", icon: DrillIcon },
   { href: "/members", label: "Laget", icon: PeopleIcon },
 ] as const;
 
@@ -108,6 +109,15 @@ function CalendarIcon(props: React.SVGProps<SVGSVGElement>) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
       <rect x="3" y="4" width="18" height="18" rx="2" />
       <path d="M3 10h18M8 2v4M16 2v4" />
+    </svg>
+  );
+}
+
+function DrillIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M7 15c2-4 4-6 5-6s2 3 5 3M17 8l2 1-1 2" />
     </svg>
   );
 }

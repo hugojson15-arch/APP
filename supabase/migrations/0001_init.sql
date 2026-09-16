@@ -69,10 +69,22 @@ create table if not exists public.chat_reads (
   primary key (team_id, user_id)
 );
 
+create table if not exists public.drills (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references public.teams (id) on delete cascade,
+  title text not null,
+  drawing_data jsonb not null,
+  thumbnail_url text not null,
+  created_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists events_team_time_idx on public.events (team_id, start_time);
 create index if not exists messages_team_time_idx on public.messages (team_id, created_at);
 create index if not exists rsvps_event_idx on public.rsvps (event_id);
 create index if not exists profiles_team_idx on public.profiles (team_id);
+create index if not exists drills_team_time_idx on public.drills (team_id, created_at);
 
 -- ============================================================
 -- Helper functions
@@ -344,6 +356,7 @@ alter table public.events enable row level security;
 alter table public.rsvps enable row level security;
 alter table public.messages enable row level security;
 alter table public.chat_reads enable row level security;
+alter table public.drills enable row level security;
 
 -- teams
 create policy "teams: members can view own team" on public.teams
@@ -413,6 +426,19 @@ create policy "chat_reads: self upsert" on public.chat_reads
 create policy "chat_reads: self update" on public.chat_reads
   for update using (user_id = auth.uid());
 
+-- drills
+create policy "drills: team can view" on public.drills
+  for select using (team_id = public.my_team_id());
+
+create policy "drills: admin can insert" on public.drills
+  for insert with check (public.is_team_admin(team_id));
+
+create policy "drills: admin can update" on public.drills
+  for update using (public.is_team_admin(team_id));
+
+create policy "drills: admin can delete" on public.drills
+  for delete using (public.is_team_admin(team_id));
+
 -- ============================================================
 -- Realtime
 -- ============================================================
@@ -448,3 +474,13 @@ create policy "chat-images: public read" on storage.objects
 
 create policy "chat-images: authenticated upload" on storage.objects
   for insert with check (bucket_id = 'chat-images' and auth.role() = 'authenticated');
+
+insert into storage.buckets (id, name, public)
+values ('drills', 'drills', true)
+on conflict (id) do nothing;
+
+create policy "drills: public read" on storage.objects
+  for select using (bucket_id = 'drills');
+
+create policy "drills: authenticated upload" on storage.objects
+  for insert with check (bucket_id = 'drills' and auth.role() = 'authenticated');
