@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { updateTeamBranding, regenerateInviteCode, type TeamActionState } from "@/lib/actions/team";
 import type { Team } from "@/lib/database.types";
 
@@ -18,8 +18,15 @@ export default function SettingsForm({
   const [inviteCode, setInviteCode] = useState(team.invite_code);
   const [isRegenerating, startRegenerate] = useTransition();
 
-  const inviteLink =
-    typeof window !== "undefined" ? `${window.location.origin}/join?code=${inviteCode}` : "";
+  // Computed post-mount (not during render) so the server-rendered markup -
+  // which has no notion of window.location - matches the initial client
+  // render, avoiding a hydration mismatch.
+  const [inviteLink, setInviteLink] = useState("");
+  useEffect(() => {
+    const link = `${window.location.origin}/join?code=${inviteCode}`;
+    // Deferred to a microtask so this isn't a synchronous setState-in-effect.
+    queueMicrotask(() => setInviteLink(link));
+  }, [inviteCode]);
 
   return (
     <div className="mt-6 space-y-8">
