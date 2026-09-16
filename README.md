@@ -26,11 +26,21 @@ den snabba PWA-vägen i specen — en kodbas, ingen egen auth/realtime-backend a
   via Supabase Realtime — ingen sidladdning.
 - **Chatt** — en gruppkanal per lag, meddelanden i realtid, bilduppladdning,
   "sedd av"-indikator, optimistisk sändning.
+- **Lineup i chatten** — admin trycker 🏒 i chatten, tilldelar varje spelare i
+  truppen ett tröjnummer och en position (Forward/Back/Målvakt) i en enkel lista,
+  ser en levande förhandsvisning i lagets färger, och postar den som en bild i
+  gruppchatten (`src/app/(app)/chat/lineup-composer.tsx` + `lineup-card.tsx`).
+  Bilden renderas i webbläsaren från lagets faktiska logga/färger (`html-to-image`)
+  och skickas via samma bilduppladdningsväg som vanliga chattbilder. Tröjnummer/
+  position sparas på spelaren så de är förifyllda nästa gång. Detta är en lätt
+  variant av "laguppställningar" — inte en fullständig taktiktavla (se scope
+  nedan).
 - **Roller** — admin (tränare/lagledare) vs. spelare, med databasnivå-behörigheter
   (Row Level Security), inte bara UI-gömda knappar.
 
-Explicit utanför scope i v1 (se spec): formationer/taktiktavla, video, sömn/återhämtning,
-reselogistik, fakturering, övningsbank.
+Explicit utanför scope i v1 (se spec): formationer/taktiktavla (i bemärkelsen
+positionering på en isbana/spelplan), video, sömn/återhämtning, reselogistik,
+fakturering, övningsbank. Lineup-kortet ovan är en enkel roster-lista, inte detta.
 
 ## Komma igång
 

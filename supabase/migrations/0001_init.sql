@@ -24,6 +24,8 @@ create table if not exists public.profiles (
   name text,
   role text check (role in ('admin', 'player')),
   team_id uuid references public.teams (id) on delete set null,
+  jersey_number integer,
+  player_position text check (player_position in ('forward', 'defense', 'goalie')),
   created_at timestamptz not null default now()
 );
 
@@ -257,6 +259,36 @@ begin
 
   perform set_config('app.bypass_profile_guard', 'on', true);
   update public.profiles set role = p_role where id = p_profile_id;
+end;
+$$;
+
+-- Admin-only: set a teammate's jersey number / position, used when building
+-- a lineup so numbers persist for next time instead of retyping them.
+create or replace function public.admin_set_roster_info(
+  p_profile_id uuid,
+  p_jersey_number integer,
+  p_player_position text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_team_id uuid;
+begin
+  if p_player_position is not null and p_player_position not in ('forward', 'defense', 'goalie') then
+    raise exception 'Invalid position';
+  end if;
+
+  select team_id into v_team_id from public.profiles where id = p_profile_id;
+  if v_team_id is null or not public.is_team_admin(v_team_id) then
+    raise exception 'Only admins can do this';
+  end if;
+
+  update public.profiles
+  set jersey_number = p_jersey_number, player_position = p_player_position
+  where id = p_profile_id;
 end;
 $$;
 

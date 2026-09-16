@@ -5,9 +5,10 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { markChatRead, sendMessage, type ChatActionState } from "@/lib/actions/chat";
 import { notifyLocal } from "@/lib/notify";
-import type { ChatRead, Message, Profile } from "@/lib/database.types";
+import type { ChatRead, Message, Profile, Team } from "@/lib/database.types";
+import LineupComposer from "./lineup-composer";
 
-type Member = Pick<Profile, "id" | "name" | "email">;
+type Member = Pick<Profile, "id" | "name" | "email" | "jersey_number" | "player_position">;
 type OptimisticMessage = Message & { pending?: boolean };
 
 const initial: ChatActionState = { error: null };
@@ -15,16 +16,21 @@ const initial: ChatActionState = { error: null };
 export default function ChatView({
   teamId,
   meId,
+  isAdmin,
   initialMessages,
   members,
   initialReads,
+  team,
 }: {
   teamId: string;
   meId: string;
+  isAdmin: boolean;
   initialMessages: Message[];
   members: Member[];
   initialReads: ChatRead[];
+  team: Pick<Team, "name" | "logo_url" | "primary_color" | "secondary_color"> | null;
 }) {
+  const [showLineup, setShowLineup] = useState(false);
   const [messages, setMessages] = useState<OptimisticMessage[]>(initialMessages);
   const [reads, setReads] = useState<ChatRead[]>(initialReads);
   const [state, formAction, pending] = useActionState(sendMessage, initial);
@@ -211,6 +217,16 @@ export default function ChatView({
         }}
         className="mb-4 flex items-end gap-2 border-t border-[var(--border)] pt-3"
       >
+        {isAdmin && team && (
+          <button
+            type="button"
+            onClick={() => setShowLineup(true)}
+            title="Skapa lineup"
+            className="rounded-full p-2 text-[var(--muted)] hover:bg-black/5 dark:hover:bg-white/10"
+          >
+            🏒
+          </button>
+        )}
         <label className="cursor-pointer rounded-full p-2 text-[var(--muted)] hover:bg-black/5 dark:hover:bg-white/10">
           📷
           <input
@@ -244,6 +260,10 @@ export default function ChatView({
           Skicka
         </button>
       </form>
+
+      {showLineup && team && (
+        <LineupComposer team={team} roster={members} onClose={() => setShowLineup(false)} />
+      )}
     </div>
   );
 }

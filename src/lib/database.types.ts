@@ -1,6 +1,7 @@
 export type EventType = "training" | "match" | "other";
 export type RsvpStatus = "going" | "not_going" | "maybe";
 export type Role = "admin" | "player";
+export type PlayerPosition = "forward" | "defense" | "goalie";
 
 export interface Team {
   id: string;
@@ -19,6 +20,8 @@ export interface Profile {
   name: string | null;
   role: Role | null;
   team_id: string | null;
+  jersey_number: number | null;
+  player_position: PlayerPosition | null;
   created_at: string;
 }
 
