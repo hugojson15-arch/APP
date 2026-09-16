@@ -7,11 +7,13 @@ import RinkBackground from "./rink-background";
 import { ArrowNode, ConeNode, PlayerNode, PuckNode, TextNode } from "./drill-shapes";
 import {
   ARROW_STYLE_LABEL,
+  FORMATION_CATEGORY_LABEL,
   FORMATION_PRESETS,
   RINK_SIZE,
   type ArrowStyle,
   type DrillData,
   type DrillShape,
+  type FormationCategory,
   type RinkTemplate,
 } from "@/lib/drill-types";
 import { saveDrill, postDrillToChat } from "@/lib/actions/drills";
@@ -43,6 +45,7 @@ export default function DrillEditor({
   const [tool, setTool] = useState<Tool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [rosterPick, setRosterPick] = useState(roster[0]?.id ?? "");
+  const [formationCategory, setFormationCategory] = useState<FormationCategory>("powerplay");
   const [title, setTitle] = useState("Ny övning");
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -137,10 +140,10 @@ export default function DrillEditor({
     const preset = FORMATION_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
     setRink("half");
-    const next: DrillShape[] = [];
+    const additions: DrillShape[] = [];
     preset.positions.forEach((pos, i) => {
       const member = roster[i];
-      next.push({
+      additions.push({
         id: uid(),
         type: "player",
         x: pos.x,
@@ -148,11 +151,13 @@ export default function DrillEditor({
         team: "us",
         label: member?.jersey_number != null ? String(member.jersey_number) : String(i + 1),
       });
-      next.push({ id: uid(), type: "text", x: pos.x - 30, y: pos.y + 22, text: pos.label });
+      additions.push({ id: uid(), type: "text", x: pos.x - 30, y: pos.y + 22, text: pos.label });
     });
-    setShapes(next);
+    // Adds to the canvas rather than replacing it, so e.g. PK Forwards and PK
+    // Backar can be layered into one full penalty-kill box.
+    setShapes((prev) => [...prev, ...additions]);
     setSelectedId(null);
-    setTitle(`Powerplay ${preset.name}`);
+    if (title.trim() === "" || title === "Ny övning") setTitle(preset.name);
   }
 
   async function handleSave(andPost: boolean) {
@@ -214,30 +219,43 @@ export default function DrillEditor({
           onChange={(e) => setTitle(e.target.value)}
           className="rounded-lg border border-[var(--border)] bg-transparent px-3 py-2 text-lg font-bold outline-none focus:border-[var(--color-primary)]"
         />
-        <div className="flex gap-2">
-          <select
-            value={rink}
-            onChange={(e) => setRink(e.target.value as RinkTemplate)}
-            className="rounded-lg border border-[var(--border)] bg-transparent px-2 py-2 text-sm"
-          >
-            <option value="full">Hel bana</option>
-            <option value="half">Halv bana</option>
-            <option value="neutral">Neutral zon</option>
-          </select>
-          {FORMATION_PRESETS.length > 0 && (
-            <select
-              defaultValue=""
-              onChange={(e) => e.target.value && applyPreset(e.target.value)}
-              className="rounded-lg border border-[var(--border)] bg-transparent px-2 py-2 text-sm"
+        <select
+          value={rink}
+          onChange={(e) => setRink(e.target.value as RinkTemplate)}
+          className="rounded-lg border border-[var(--border)] bg-transparent px-2 py-2 text-sm"
+        >
+          <option value="full">Hel bana</option>
+          <option value="half">Halv bana</option>
+          <option value="neutral">Neutral zon</option>
+        </select>
+      </div>
+
+      <div className="mt-3">
+        <div className="flex gap-1 rounded-lg bg-black/5 p-1 text-sm dark:bg-white/5">
+          {(Object.keys(FORMATION_CATEGORY_LABEL) as FormationCategory[]).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFormationCategory(cat)}
+              className={`flex-1 rounded-md py-1.5 font-medium transition ${
+                formationCategory === cat
+                  ? "bg-[var(--surface)] shadow-sm"
+                  : "text-[var(--muted)]"
+              }`}
             >
-              <option value="">Snabbstart: powerplay…</option>
-              {FORMATION_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          )}
+              {FORMATION_CATEGORY_LABEL[cat]}
+            </button>
+          ))}
+        </div>
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+          {FORMATION_PRESETS.filter((p) => p.category === formationCategory).map((p) => (
+            <button
+              key={p.id}
+              onClick={() => applyPreset(p.id)}
+              className="shrink-0 rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-semibold whitespace-nowrap hover:bg-black/5 dark:hover:bg-white/5"
+            >
+              + {p.name}
+            </button>
+          ))}
         </div>
       </div>
 

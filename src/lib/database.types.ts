@@ -72,3 +72,24 @@ export interface Drill {
   created_at: string;
   updated_at: string;
 }
+
+export interface ScoutingReport {
+  id: string;
+  team_id: string;
+  opponent_name: string;
+  forecheck_notes: string | null;
+  pp_notes: string | null;
+  faceoff_notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Video {
+  id: string;
+  team_id: string;
+  title: string;
+  video_url: string;
+  uploaded_by: string | null;
+  created_at: string;
+}

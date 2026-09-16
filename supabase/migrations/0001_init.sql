@@ -80,11 +80,34 @@ create table if not exists public.drills (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.scouting_reports (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references public.teams (id) on delete cascade,
+  opponent_name text not null,
+  forecheck_notes text,
+  pp_notes text,
+  faceoff_notes text,
+  created_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.videos (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references public.teams (id) on delete cascade,
+  title text not null,
+  video_url text not null,
+  uploaded_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists events_team_time_idx on public.events (team_id, start_time);
 create index if not exists messages_team_time_idx on public.messages (team_id, created_at);
 create index if not exists rsvps_event_idx on public.rsvps (event_id);
 create index if not exists profiles_team_idx on public.profiles (team_id);
 create index if not exists drills_team_time_idx on public.drills (team_id, created_at);
+create index if not exists scouting_reports_team_idx on public.scouting_reports (team_id, created_at);
+create index if not exists videos_team_time_idx on public.videos (team_id, created_at);
 
 -- ============================================================
 -- Helper functions
@@ -357,6 +380,8 @@ alter table public.rsvps enable row level security;
 alter table public.messages enable row level security;
 alter table public.chat_reads enable row level security;
 alter table public.drills enable row level security;
+alter table public.scouting_reports enable row level security;
+alter table public.videos enable row level security;
 
 -- teams
 create policy "teams: members can view own team" on public.teams
@@ -439,6 +464,29 @@ create policy "drills: admin can update" on public.drills
 create policy "drills: admin can delete" on public.drills
   for delete using (public.is_team_admin(team_id));
 
+-- scouting_reports
+create policy "scouting_reports: team can view" on public.scouting_reports
+  for select using (team_id = public.my_team_id());
+
+create policy "scouting_reports: admin can insert" on public.scouting_reports
+  for insert with check (public.is_team_admin(team_id));
+
+create policy "scouting_reports: admin can update" on public.scouting_reports
+  for update using (public.is_team_admin(team_id));
+
+create policy "scouting_reports: admin can delete" on public.scouting_reports
+  for delete using (public.is_team_admin(team_id));
+
+-- videos
+create policy "videos: team can view" on public.videos
+  for select using (team_id = public.my_team_id());
+
+create policy "videos: admin can insert" on public.videos
+  for insert with check (public.is_team_admin(team_id));
+
+create policy "videos: admin can delete" on public.videos
+  for delete using (public.is_team_admin(team_id));
+
 -- ============================================================
 -- Realtime
 -- ============================================================
@@ -484,3 +532,16 @@ create policy "drills: public read" on storage.objects
 
 create policy "drills: authenticated upload" on storage.objects
   for insert with check (bucket_id = 'drills' and auth.role() = 'authenticated');
+
+-- Videos can be large, so the client uploads directly to this bucket
+-- (bypassing Next's server-action body-size limit entirely) rather than
+-- through a server action.
+insert into storage.buckets (id, name, public)
+values ('videos', 'videos', true)
+on conflict (id) do nothing;
+
+create policy "videos: public read" on storage.objects
+  for select using (bucket_id = 'videos');
+
+create policy "videos: authenticated upload" on storage.objects
+  for insert with check (bucket_id = 'videos' and auth.role() = 'authenticated');

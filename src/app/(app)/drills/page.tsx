@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import CoachTabs from "./coach-tabs";
 import DrillsList from "./drills-list";
 
 export default async function DrillsPage() {
@@ -27,17 +28,24 @@ export default async function DrillsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Övningar</h1>
+      <h1 className="text-xl font-bold">Coachverktyg</h1>
+      <div className="mt-3">
+        <CoachTabs />
+      </div>
+
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-sm text-[var(--muted)]">
+          Rita upp powerplay, boxplay eller vilken övning som helst och posta den i chatten.
+        </p>
         {isAdmin && (
-          <Link href="/drills/new" className="btn-primary rounded-lg px-3 py-1.5 text-sm font-semibold">
+          <Link
+            href="/drills/new"
+            className="btn-primary shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold"
+          >
             + Ny övning
           </Link>
         )}
       </div>
-      <p className="mt-1 text-sm text-[var(--muted)]">
-        Rita upp powerplay, boxplay eller vilken övning som helst och posta den i chatten.
-      </p>
 
       <DrillsList drills={drills ?? []} isAdmin={isAdmin} />
     </div>

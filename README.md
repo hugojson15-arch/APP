@@ -35,24 +35,42 @@ den snabba PWA-vägen i specen — en kodbas, ingen egen auth/realtime-backend a
   position sparas på spelaren så de är förifyllda nästa gång. Detta är en lätt
   variant av "laguppställningar" — inte en fullständig taktiktavla (se scope
   nedan).
-- **Övningar (ritverktyg)** — admin ritar upp en övning/taktik på en ishockeyrink
-  (hel/halv/neutral zon): drar ut spelare (egna/motstånd), puck, koner, text och
-  tre sorters pilar (skridsko/passning/skott), sparar den (strukturerad data i
-  `drills.drawing_data`, inte bara en bild — går att bygga vidare på senare) och
-  postar en ögonblicksbild i chatten med en knapptryckning. En "Snabbstart:
-  powerplay"-meny fyller i kända formationer (t.ex. 1-3-1) automatiskt utplacerade
-  med truppens numren, som utgångspunkt att justera. Byggt med `konva`/`react-konva`
-  (`src/app/(app)/drills/`); rendering av kanvasen är webbläsar-only, laddas via
-  `next/dynamic({ ssr: false })` eftersom Konva rör vid `window` vid import.
+- **Coachverktyg** (`/drills`, tre flikar) — admin-only att skapa/hantera, hela laget
+  kan läsa:
+  - **Övningar** — rita upp en övning/taktik på en ishockeyrink (hel/halv/neutral
+    zon): spelare (egna/motstånd), puck, koner, text och tre sorters pilar
+    (skridsko/passning/skott). En scrollbar snabbstart-meny med Powerplay/Boxplay-
+    flikar fyller i kända formationer (PP1, PP2/Paraply, PK Forwards, PK Backar) —
+    varje formation *läggs till* på ritytan istället för att ersätta den, så t.ex.
+    PK Forwards + PK Backar går att kombinera till en hel boxplay-box. Sparas som
+    strukturerad data (`drills.drawing_data`, inte bara en bild — går att bygga
+    vidare på senare) och postas som en ögonblicksbild i chatten med en
+    knapptryckning. Byggt med `konva`/`react-konva` (`src/app/(app)/drills/`);
+    rendering av kanvasen är webbläsar-only, laddas via `next/dynamic({ ssr: false
+    })` eftersom Konva rör vid `window` vid import.
+  - **Scouting** — enkla rapporter per motståndare (forecheck, förväntad
+    powerplay-uppställning, tekningstendenser) som fritext. Ersätter den "Taktik"-
+    flik som ursprungligen var tänkt som ett formationsbibliotek.
+  - **Videor** — tränare laddar upp videoklipp (träning/match), spelas upp direkt i
+    appen. Laddas upp **direkt från webbläsaren till Supabase Storage**, inte via
+    en server action — se säkerhets-/teknikanteckningen om `bodySizeLimit` nedan.
+- **Lineup i chatten** — admin trycker 🏒 i chatten, tilldelar varje spelare i
+  truppen ett tröjnummer och en position (Forward/Back/Målvakt) i en enkel lista,
+  ser en levande förhandsvisning i lagets färger, och postar den som en bild i
+  gruppchatten (`src/app/(app)/chat/lineup-composer.tsx` + `lineup-card.tsx`).
+  Bilden renderas i webbläsaren från lagets faktiska logga/färger (`html-to-image`)
+  och skickas via samma bilduppladdningsväg som vanliga chattbilder. Tröjnummer/
+  position sparas på spelaren så de är förifyllda nästa gång.
 - **Roller** — admin (tränare/lagledare) vs. spelare, med databasnivå-behörigheter
   (Row Level Security), inte bara UI-gömda knappar.
 
-Ursprungsspecen listade uttryckligen "formationer/taktiktavla" som utanför scope
-för v1 — övningsritverktyget ovan byggdes ändå, på uttrycklig begäran, som en
-tydligt avgränsad MVP av just det (rita och dela, inte en fullständig
-träningsplanerare). Fortfarande utanför scope: video, sömn/återhämtning,
-reselogistik, fakturering, en delad övningsbank/publikt bibliotek, och animerad
-uppspelning av övningar steg-för-steg (à la CoachThem).
+Ursprungsspecen listade uttryckligen "formationer/taktiktavla" och "video" som
+utanför scope för v1 — båda byggdes ändå, på uttrycklig begäran, som tydligt
+avgränsade MVP:er (rita och dela; ladda upp och spela upp — inte en fullständig
+tränings-/videoanalysplattform). Fortfarande utanför scope: sömn/återhämtning,
+reselogistik, fakturering, en delad övningsbank/publikt bibliotek, videoklipp-
+klippning/anteckningar per tidsstämpel, och animerad uppspelning av övningar
+steg-för-steg (à la CoachThem).
 
 ## Komma igång
 
@@ -83,10 +101,10 @@ uppspelning av övningar steg-för-steg (à la CoachThem).
 - `src/lib/supabase/` — browser-/server-/middleware-klienter för Supabase enligt
   `@supabase/ssr`-mönstret (cookie-baserad session).
 - `supabase/migrations/0001_init.sql` — hela datamodellen: `teams`, `profiles`,
-  `events`, `rsvps`, `messages`, `chat_reads`, `drills`, plus RLS-policyer och
-  SECURITY DEFINER-funktioner för att skapa/gå med i lag och hantera medlemmar utan
-  att öppna upp privilege-escalation-hål (en spelare kan t.ex. inte sätta sin egen
-  `role` till admin).
+  `events`, `rsvps`, `messages`, `chat_reads`, `drills`, `scouting_reports`,
+  `videos`, plus RLS-policyer och SECURITY DEFINER-funktioner för att skapa/gå med
+  i lag och hantera medlemmar utan att öppna upp privilege-escalation-hål (en
+  spelare kan t.ex. inte sätta sin egen `role` till admin).
 - Realtid: Supabase Realtime (`postgres_changes`) på `events`, `rsvps`, `messages` och
   `chat_reads`, scopat till laget via RLS.
 - `src/lib/team-brand.ts` — slår upp den inloggade användarens lag (namn, färger,
@@ -126,7 +144,23 @@ saknas.
 
 ## Säkerhetsanteckningar
 
-- Storage-policyerna för `logos`/`chat-images` tillåter alla inloggade användare att
-  ladda upp (inte bara det egna laget) eftersom Supabase Storage-RLS inte enkelt kan
-  läsa `team_id` ur filsökvägen utan mer uppsättning. Filer är inte känsliga (loggor,
-  chattbilder) så det är en medveten avvägning för en MVP — strama åt om det behövs.
+- Storage-policyerna för `logos`/`chat-images`/`drills`/`videos` tillåter alla
+  inloggade användare att ladda upp (inte bara det egna laget) eftersom Supabase
+  Storage-RLS inte enkelt kan läsa `team_id` ur filsökvägen utan mer uppsättning.
+  Filer är inte känsliga (loggor, chattbilder, ritade övningar, träningsklipp) så
+  det är en medveten avvägning för en MVP — strama åt om det behövs.
+
+## Teknisk anteckning: server action-uppladdningar
+
+Next.js server actions har som standard en gräns på **1 MB** per request
+(`experimental.serverActions.bodySizeLimit`). Den var inte satt här, vilket i
+praktiken satte ett osynligt tak på varje bilduppladdning som går via en server
+action (logga, chattbild, lineup-/övningsbild) — allt över ~1 MB (en vanlig
+telefonbild, eller en hi-DPI canvas-export) skulle tyst misslyckas. Fixat i
+`next.config.ts` genom att höja gränsen till 15 MB.
+
+Videoklipp är en annan sak — de kan lätt bli hundratals MB, vilket 15 MB inte
+räcker till. `videos-view.tsx` laddar därför upp **direkt från webbläsaren till
+Supabase Storage** med den vanliga Supabase JS-klienten, helt utan att gå via en
+Next.js server action (RLS på `storage.objects` skyddar uppladdningen ändå).
+Databasraden i `videos`-tabellen infogas på samma sätt, direkt från klienten.
