@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY, DEFAULT_SECONDARY } from "@/lib/theme";
 
 export type TeamActionState = { error: string | null };
 
@@ -30,8 +31,9 @@ export async function createTeam(
   formData: FormData,
 ): Promise<TeamActionState> {
   const name = String(formData.get("name") ?? "").trim();
-  const primaryColor = String(formData.get("primary_color") ?? "#1d4ed8");
-  const secondaryColor = String(formData.get("secondary_color") ?? "#0f172a");
+  const primaryColor = String(formData.get("primary_color") ?? DEFAULT_PRIMARY);
+  const secondaryColor = String(formData.get("secondary_color") ?? DEFAULT_SECONDARY);
+  const accentColor = String(formData.get("accent_color") ?? DEFAULT_ACCENT);
 
   if (!name) return { error: "Ange ett lagnamn" };
 
@@ -52,6 +54,7 @@ export async function createTeam(
     p_name: name,
     p_primary_color: primaryColor,
     p_secondary_color: secondaryColor,
+    p_accent_color: accentColor,
     p_logo_url: logoUrl,
   });
   if (error) return { error: error.message };
@@ -79,8 +82,9 @@ export async function updateTeamBranding(
 ): Promise<TeamActionState> {
   const teamId = String(formData.get("team_id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  const primaryColor = String(formData.get("primary_color") ?? "#1d4ed8");
-  const secondaryColor = String(formData.get("secondary_color") ?? "#0f172a");
+  const primaryColor = String(formData.get("primary_color") ?? DEFAULT_PRIMARY);
+  const secondaryColor = String(formData.get("secondary_color") ?? DEFAULT_SECONDARY);
+  const accentColor = String(formData.get("accent_color") ?? DEFAULT_ACCENT);
 
   const supabase = await createClient();
   const {
@@ -100,6 +104,7 @@ export async function updateTeamBranding(
     name,
     primary_color: primaryColor,
     secondary_color: secondaryColor,
+    accent_color: accentColor,
   };
   if (logoUrl) update.logo_url = logoUrl;
 

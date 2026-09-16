@@ -262,7 +262,7 @@ function EventCard({
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <span className="chip-primary inline-block rounded-full px-2 py-0.5 text-xs font-semibold">
+          <span className="chip-accent inline-block rounded-full px-2 py-0.5 text-xs font-semibold">
             {TYPE_LABEL[event.type]}
           </span>
           <h4 className="mt-1 font-semibold">{event.title}</h4>

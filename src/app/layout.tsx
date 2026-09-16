@@ -15,12 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Lag-app",
   description: "Kalender, chatt och klubbanpassad branding för ditt lag.",
-  manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Lag-app" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1d4ed8",
+  themeColor: "#d91e2a",
   width: "device-width",
   initialScale: 1,
 };

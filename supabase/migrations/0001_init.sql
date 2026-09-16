@@ -10,8 +10,9 @@ create extension if not exists "pgcrypto";
 create table if not exists public.teams (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  primary_color text not null default '#1d4ed8',
-  secondary_color text not null default '#0f172a',
+  primary_color text not null default '#d91e2a',
+  secondary_color text not null default '#0b0b0b',
+  accent_color text not null default '#f5c518',
   logo_url text,
   invite_code text not null unique,
   created_at timestamptz not null default now()
@@ -175,6 +176,7 @@ create or replace function public.create_team(
   p_name text,
   p_primary_color text,
   p_secondary_color text,
+  p_accent_color text default '#f5c518',
   p_logo_url text default null
 )
 returns public.teams
@@ -191,8 +193,8 @@ begin
     raise exception 'You already belong to a team';
   end if;
 
-  insert into public.teams (name, primary_color, secondary_color, logo_url, invite_code)
-  values (p_name, p_primary_color, p_secondary_color, p_logo_url, public.generate_invite_code())
+  insert into public.teams (name, primary_color, secondary_color, accent_color, logo_url, invite_code)
+  values (p_name, p_primary_color, p_secondary_color, p_accent_color, p_logo_url, public.generate_invite_code())
   returning * into v_team;
 
   perform set_config('app.bypass_profile_guard', 'on', true);

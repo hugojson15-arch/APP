@@ -8,10 +8,12 @@
   --muted: #64748b;
 
   /* Team branding tokens - overridden per-team via inline style (see theme.ts) */
-  --color-primary: #1d4ed8;
+  --color-primary: #d91e2a;
   --color-primary-text: #ffffff;
-  --color-secondary: #0f172a;
+  --color-secondary: #0b0b0b;
   --color-secondary-text: #ffffff;
+  --color-accent: #f5c518;
+  --color-accent-text: #0f172a;
 }
 
 @theme inline {
@@ -24,6 +26,8 @@
   --color-brand-primary-text: var(--color-primary-text);
   --color-brand-secondary: var(--color-secondary);
   --color-brand-secondary-text: var(--color-secondary-text);
+  --color-brand-accent: var(--color-accent);
+  --color-brand-accent-text: var(--color-accent-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -61,4 +65,9 @@ body {
 .chip-primary {
   background: color-mix(in srgb, var(--color-primary) 15%, transparent);
   color: var(--color-primary);
+}
+
+.chip-accent {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
 }

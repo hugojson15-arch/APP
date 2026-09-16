@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { createTeam, joinTeam, type TeamActionState } from "@/lib/actions/team";
-import { DEFAULT_PRIMARY, DEFAULT_SECONDARY } from "@/lib/theme";
+import { DEFAULT_ACCENT, DEFAULT_PRIMARY, DEFAULT_SECONDARY } from "@/lib/theme";
 
 const initial: TeamActionState = { error: null };
 
@@ -12,6 +12,7 @@ export default function OnboardingForms() {
   const [joinState, joinAction, joinPending] = useActionState(joinTeam, initial);
   const [primary, setPrimary] = useState(DEFAULT_PRIMARY);
   const [secondary, setSecondary] = useState(DEFAULT_SECONDARY);
+  const [accent, setAccent] = useState(DEFAULT_ACCENT);
 
   return (
     <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -49,7 +50,7 @@ export default function OnboardingForms() {
             />
           </label>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <label className="block text-sm">
               <span className="mb-1 block font-medium">Primärfärg</span>
               <input
@@ -70,6 +71,16 @@ export default function OnboardingForms() {
                 className="h-10 w-full rounded-lg border border-[var(--border)]"
               />
             </label>
+            <label className="block text-sm">
+              <span className="mb-1 block font-medium">Accentfärg</span>
+              <input
+                type="color"
+                name="accent_color"
+                value={accent}
+                onChange={(e) => setAccent(e.target.value)}
+                className="h-10 w-full rounded-lg border border-[var(--border)]"
+              />
+            </label>
           </div>
 
           <label className="block text-sm">
@@ -83,16 +94,24 @@ export default function OnboardingForms() {
           </label>
 
           <div
-            className="flex items-center gap-3 rounded-lg p-3"
-            style={{ background: primary, color: "#fff" }}
+            className="flex items-center justify-between rounded-lg p-3"
+            style={{ background: secondary, color: "#fff" }}
           >
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
-              style={{ background: secondary }}
-            >
-              LAG
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold"
+                style={{ background: primary }}
+              >
+                LAG
+              </div>
+              <span className="font-semibold">Förhandsvisning av tema</span>
             </div>
-            <span className="font-semibold">Förhandsvisning av tema</span>
+            <span
+              className="rounded-full px-2.5 py-1 text-xs font-semibold"
+              style={{ background: accent, color: "#0f172a" }}
+            >
+              Match
+            </span>
           </div>
 
           {createState.error && <p className="text-sm text-red-600">{createState.error}</p>}

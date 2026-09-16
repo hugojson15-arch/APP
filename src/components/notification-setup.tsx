@@ -26,7 +26,7 @@ export default function NotificationSetup() {
   if (!showBanner) return null;
 
   return (
-    <div className="chip-primary flex items-center justify-between gap-3 px-4 py-2 text-sm">
+    <div className="chip-accent flex items-center justify-between gap-3 px-4 py-2 text-sm">
       <span>Vill du få notiser om nya händelser och meddelanden?</span>
       <div className="flex shrink-0 gap-2">
         <button

@@ -16,14 +16,19 @@ export function readableTextColor(hex: string): string {
  * surface in the app reads from these vars instead of hardcoded colors, so a
  * new team's colors/logo re-skin the whole UI with zero code changes.
  */
-export function teamThemeStyle(primary: string, secondary: string): CSSProperties {
+export function teamThemeStyle(primary: string, secondary: string, accent: string): CSSProperties {
   return {
     "--color-primary": primary,
     "--color-primary-text": readableTextColor(primary),
     "--color-secondary": secondary,
     "--color-secondary-text": readableTextColor(secondary),
+    "--color-accent": accent,
+    "--color-accent-text": readableTextColor(accent),
   } as CSSProperties;
 }
 
-export const DEFAULT_PRIMARY = "#1d4ed8";
-export const DEFAULT_SECONDARY = "#0f172a";
+// Defaults new teams start from in the onboarding form - a red/black/gold
+// scheme (à la Luleå HF), tweak away per team from there.
+export const DEFAULT_PRIMARY = "#d91e2a";
+export const DEFAULT_SECONDARY = "#0b0b0b";
+export const DEFAULT_ACCENT = "#f5c518";

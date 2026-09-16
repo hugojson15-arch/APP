@@ -9,11 +9,15 @@ const initial: TeamActionState = { error: null };
 export default function SettingsForm({
   team,
 }: {
-  team: Pick<Team, "id" | "name" | "primary_color" | "secondary_color" | "logo_url" | "invite_code">;
+  team: Pick<
+    Team,
+    "id" | "name" | "primary_color" | "secondary_color" | "accent_color" | "logo_url" | "invite_code"
+  >;
 }) {
   const [state, action, pending] = useActionState(updateTeamBranding, initial);
   const [primary, setPrimary] = useState(team.primary_color);
   const [secondary, setSecondary] = useState(team.secondary_color);
+  const [accent, setAccent] = useState(team.accent_color);
   const [saved, setSaved] = useState(false);
   const [inviteCode, setInviteCode] = useState(team.invite_code);
   const [isRegenerating, startRegenerate] = useTransition();
@@ -50,7 +54,7 @@ export default function SettingsForm({
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <label className="block text-sm">
             <span className="mb-1 block font-medium">Primärfärg</span>
             <input
@@ -68,6 +72,16 @@ export default function SettingsForm({
               name="secondary_color"
               value={secondary}
               onChange={(e) => setSecondary(e.target.value)}
+              className="h-10 w-full rounded-lg border border-[var(--border)]"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1 block font-medium">Accentfärg</span>
+            <input
+              type="color"
+              name="accent_color"
+              value={accent}
+              onChange={(e) => setAccent(e.target.value)}
               className="h-10 w-full rounded-lg border border-[var(--border)]"
             />
           </label>

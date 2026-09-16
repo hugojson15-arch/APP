@@ -18,7 +18,7 @@ export default async function SettingsPage() {
 
   const { data: team } = await supabase
     .from("teams")
-    .select("id, name, primary_color, secondary_color, logo_url, invite_code")
+    .select("id, name, primary_color, secondary_color, accent_color, logo_url, invite_code")
     .eq("id", profile.team_id)
     .single();
   if (!team) redirect("/calendar");

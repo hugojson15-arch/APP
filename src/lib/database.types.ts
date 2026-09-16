@@ -7,6 +7,7 @@ export interface Team {
   name: string;
   primary_color: string;
   secondary_color: string;
+  accent_color: string;
   logo_url: string | null;
   invite_code: string;
   created_at: string;
